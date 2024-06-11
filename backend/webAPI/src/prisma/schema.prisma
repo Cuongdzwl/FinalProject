@@ -12,3 +12,55 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id              Int            @id @default(autoincrement())
+  name            String
+  email           String         @unique
+  salt            String
+  password        String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  lastOnline      DateTime?
+  isOnline        Boolean        @default(false)
+
+  authentications UserProvider[]
+  roles           UserRole[]
+}
+
+model AuthenticationProvider {
+  id              Int            @id @default(autoincrement())
+  name            String         @unique
+  name_normalize  String         @unique
+  authentications UserProvider[]
+}
+
+model UserProvider {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  providerId Int
+  key        String
+  createdAt  DateTime @default(now())
+
+  user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider AuthenticationProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId])
+}
+
+
+model Role {
+  id    Int        @id @default(autoincrement())
+  name  String     @unique
+  users UserRole[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
