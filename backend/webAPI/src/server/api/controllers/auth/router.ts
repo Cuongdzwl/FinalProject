@@ -1,9 +1,9 @@
 import * as express from 'express';
 import controller from './controller';
-import {authenticate} from '../../middlewares/authentication.handler';
-import errorHandler from '../../middlewares/error.handler';
-import response from '../../middlewares/response.handler';
-import {authorize} from '../../middlewares/authorization.handler';
+import { authenticate } from '../../middlewares/authentication.handler';
+import { authorize } from '../../middlewares/authorization.handler';
+import { wip } from '../../middlewares/wip.handler';
+
 export default express
   .Router()
   .get('/', authenticate, authorize, (_: any, res: any) => {
@@ -13,4 +13,9 @@ export default express
   .post('/token', controller.login)
   .post('/refresh-token', controller.refreshToken)
   .post('/logout', authenticate, controller.logout)
-  .get('/user', authenticate, authorize(["admin"]), controller.user, response);
+  .post('/otp/generate', wip)
+  .post('/otp/verify', wip)
+  .post('/google', wip)
+  .post('/google/callback', wip)
+  .post('/password/reset/:token', wip)
+  .post('/password/forgot', wip);

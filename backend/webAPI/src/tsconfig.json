@@ -26,6 +26,6 @@
     "baseUrl": "."
 
   },
-  "include": ["server/**/*.ts"],
+  "include": ["server/**/*.ts", "server/api/services/communication/email/email.interface"],
   "exclude": ["node_modules"]
 }

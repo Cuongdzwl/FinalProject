@@ -2,11 +2,7 @@ import { IAuthenticationService } from './authentication.interface';
 import { User } from '@prisma/client';
 import { Request } from 'express';
 import { PrismaClient } from '@prisma/client';
-import {
-  UserAccessTokenDTO,
-  UserAccountDTO,
-  UserInfomationDTO,
-} from '../../../model/UserDTO';
+import { UserAccessTokenDTO, UserAccountDTO } from '../../../model/UserDTO';
 import { OAuth2Strategy } from './oauth2strategy.interface';
 import authenticator from './passport.strategy';
 import L from '../../../common/logger';
@@ -15,7 +11,9 @@ import redisClient from '../../../common/redis';
 import { JsonWebTokenError } from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
-const TOKEN_EXPIRATION_SECONDS: number = 7 * 24 * 60 * 60 * 1000; // 7 days
+const REFRESH_TOKEN_EXPIRATION_SECONDS: number = 7 * 24 * 60 * 60 * 1000; // 7 days
+const TOKEN_EXPIRATION_SECONDS: number = 15 * 60; // 15 minutes
+
 export class AuthenticationService implements IAuthenticationService {
   private signAccessToken(user: User): string {
     let token = Utils.signAccessToken(user.id);
@@ -25,12 +23,15 @@ export class AuthenticationService implements IAuthenticationService {
     let refreshToken = Utils.signRefreshToken(user.id);
     // Save to database
     redisClient.set(refreshToken, user.id.toString(), {
-      EX: TOKEN_EXPIRATION_SECONDS,
+      EX: REFRESH_TOKEN_EXPIRATION_SECONDS,
     });
     return refreshToken;
   }
 
-  async refreshTokens(refreshToken: string): Promise<any> {
+  async refreshTokens(
+    refreshToken: string,
+    accessToken?: string
+  ): Promise<any> {
     try {
       const decoded = Utils.verifyRefreshToken(refreshToken);
 
@@ -45,17 +46,23 @@ export class AuthenticationService implements IAuthenticationService {
       ]);
 
       redisClient.del(refreshToken);
+      if (accessToken) {
+        redisClient.set(accessToken, 'invalidated', {
+          EX: TOKEN_EXPIRATION_SECONDS,
+        });
+      }
       redisClient.set(newRefreshToken, userid as string, {
-        EX: TOKEN_EXPIRATION_SECONDS,
+        EX: REFRESH_TOKEN_EXPIRATION_SECONDS,
       });
 
-      
       return Promise.resolve(
         new UserAccessTokenDTO(decoded.id, newAccessToken, newRefreshToken)
       );
     } catch (error) {
       L.error(error);
-      return Promise.reject({ message: 'Something went wrong! Invalid refresh token' });
+      return Promise.reject({
+        message: 'Something went wrong! Invalid refresh token',
+      });
     }
   }
 
@@ -129,25 +136,13 @@ export class AuthenticationService implements IAuthenticationService {
         reject({ message: 'Something went wrong.' });
         return;
       }
+      // Delete refresh token
       redisClient.del(refreshToken);
+      // Blacklist token
+      redisClient.set(accessToken, 'invalidated', {
+        EX: TOKEN_EXPIRATION_SECONDS,
+      });
       resolve({ message: 'Logged out.' });
-    });
-  }
-  user(id: number): Promise<any> {
-    return new Promise((resolve, reject) => {
-      prisma.user
-        .findUnique({ where: { id: id } })
-        .then((user) => {
-          if (!user) {
-            reject({ message: 'User not found.' });
-          }
-          // TODO: Fix this
-          resolve(user as UserInfomationDTO);
-        })
-        .catch((err) => {
-          L.error(err);
-          reject({ message: 'User not found.' });
-        });
     });
   }
 }

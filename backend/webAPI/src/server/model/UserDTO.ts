@@ -1,19 +1,23 @@
-import { RoleDTO } from "./RoleDTO";
+import { RoleDTO } from './RoleDTO';
 export class UserDTO {
   id?: number;
   name?: string;
   createdAt?: Date;
   updatedAt?: Date;
-
-  
 }
-export class UserInfomationDTO {
-  id?: number;
-  name?: string;
-  email?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  role_id?: RoleDTO;
+export class UserInformationDTO {
+  userId?: number | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  dob?: Date | null;
+  bio?: string | null;
+  avatar?: string | null;
+  isMale?: boolean | null;
+  phone?: string | null;
+  phoneverified?: boolean | null;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
 }
 export class UserAccountDTO {
   id?: number;
@@ -26,14 +30,14 @@ export class UserAccountDTO {
     this.password = password;
   }
 }
-export class UserAccessTokenDTO{
+export class UserAccessTokenDTO {
   user_id?: number;
   access_token?: string;
   refresh_token?: string;
 
-  constructor(user_id: number, access_token: string, refresh_token: string){
-      this.user_id = user_id;
-      this.access_token = access_token;
-      this.refresh_token = refresh_token;
+  constructor(user_id: number, access_token: string, refresh_token: string) {
+    this.user_id = user_id;
+    this.access_token = access_token;
+    this.refresh_token = refresh_token;
   }
 }

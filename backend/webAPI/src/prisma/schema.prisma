@@ -14,24 +14,51 @@ datasource db {
 }
 
 model User {
-  id              Int            @id @default(autoincrement())
-  name            String
-  email           String         @unique
-  salt            String
-  password        String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  lastOnline      DateTime?
-  isOnline        Boolean        @default(false)
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  salt       String
+  password   String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastOnline DateTime?
+  isOnline   Boolean   @default(false)
+  verified   Boolean   @default(false)
 
-  authentications UserProvider[]
-  roles           UserRole[]
+  authentications    UserProvider[]
+  roles              UserRole[]
+  userAuthentication UserAuthentication?
+}
+
+model UserInformation {
+  id            Int       @id @default(autoincrement())
+  userId        Int?      @unique
+  firstName     String?   @db.VarChar(25)
+  lastName      String?   @db.VarChar(25)
+  dob           DateTime?
+  bio           String?   @db.VarChar(2000)
+  avatar        String?   @default("https://www.gravatar.com/avatar/") @db.Text
+  isMale        Boolean?
+  phone         String?   @db.VarChar(15)
+  phoneverified Boolean?  @default(false)
+  address       String?   @db.VarChar(200)
+  city          String?   @db.VarChar(50)
+  country       String?   @db.VarChar(50)
+}
+
+model UserAuthentication {
+  id                 Int     @id @default(autoincrement())
+  userId             Int     @unique
+  OTP                String?
+  OTPKey             String?
+  resetPasswordToken String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AuthenticationProvider {
   id              Int            @id @default(autoincrement())
   name            String         @unique
-  name_normalize  String         @unique
+  nameNormalize   String         @unique
   authentications UserProvider[]
 }
 
@@ -47,7 +74,6 @@ model UserProvider {
 
   @@unique([userId, providerId])
 }
-
 
 model Role {
   id    Int        @id @default(autoincrement())
