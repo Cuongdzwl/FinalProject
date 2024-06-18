@@ -11,4 +11,4 @@ export class CacheService {
 
 }
 
-export default new CacheService();
+export default new CacheService(); 

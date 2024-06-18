@@ -19,7 +19,9 @@ export default class Utils {
     return jwt.verify(token, process.env.JWT_SECRET as string);
   }
 
-  
+  static verifyRefreshPasswordToken(token: string): any {
+    return jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) ;    
+  }
 
   static verifyRefreshToken(token: string): any {
     return jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) ;

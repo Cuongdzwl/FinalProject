@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import AuthenticationService from '../services/profile/profile.service';
+import AuthenticationService from '../services/user/profile/profile.service';
 import l from '../../common/logger';
 import Utils from '../services/auth/utils';
 import { TokenExpiredError } from 'jsonwebtoken';
@@ -16,14 +16,14 @@ export const authenticate = async (
     req.headers.refresh_token as string,
   ]);
   if (!accessToken) {
-    res.status(401).json(JsonResponse.error('Missing token.'));
+        res.status(401).json(new JsonResponse().error("Missing Token.").redirect("/signin").build());
     return;
   }
   try {
     const decoded = await Utils.verifyAccessToken(accessToken);
     const status = await redisClient.get(accessToken)
     if (status === "invalidated") {
-      res.status(401).json(JsonResponse.error('Invalid token.'));
+      res.status(401).json(new JsonResponse().error("Invalid Token.").redirect("/signin").build());
       return;
     }
     AuthenticationService.getUser(decoded.id).then((r) => {
@@ -32,14 +32,14 @@ export const authenticate = async (
         l.info(`User authenticated. (id: ${r.id})`);
         next();
       } else {
-        res.status(404).json(JsonResponse.error('User not found.'));
+        res.status(401).json(new JsonResponse().error("User not found.").redirect("/signup").build());
       }
     });
   } catch (err) {
     if (err instanceof TokenExpiredError) {
-      res.status(401).json(JsonResponse.error('Token expired.',{refreshToken: true}));
+      res.status(401).json(new JsonResponse().error("User not found.").metadata({refreshToken: true}).build());
     } else {
-      res.status(401).json(JsonResponse.error('Invalid token.'));
+      res.status(401).json(new JsonResponse().error("Invalid Token.").redirect("/signin").build());
     }
     return;
   }

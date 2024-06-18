@@ -1,4 +1,6 @@
+import { Request, Response, NextFunction } from 'express';
+
 export interface OAuth2Strategy {
-    login(): Promise<any>;
-    callback(): Promise<any>;
+  login(req: Request, res: Response, next: NextFunction): Promise<any>;
+  callback(req: Request, res: Response, next: NextFunction): Promise<any>;
 }

@@ -1,6 +1,6 @@
 import { PrismaClient, User, UserInformation } from '@prisma/client';
-import { UserAccountDTO, UserInformationDTO } from '../../../model/UserDTO';
-import L from '../../../common/logger';
+import { UserAccountDTO, UserInformationDTO } from '../../../../model/UserDTO';
+import L from '../../../../common/logger';
 import { IProfileService } from './profile.interface';
 import { reject, resolve } from 'bluebird';
 

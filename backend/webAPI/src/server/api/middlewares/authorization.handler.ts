@@ -1,4 +1,4 @@
-import ProfileService from './../services/profile/profile.service';
+import ProfileService from './../services/user/profile/profile.service';
 import { Request, Response, NextFunction } from 'express';
 import l from '../../common/logger';
 import { PrismaClient } from '@prisma/client';
@@ -22,13 +22,13 @@ export const authorize =
       res.locals.user.id as number
     );
     if (!userRole) {
-      res.status(403).json(JsonResponse.error("Forbidden."));
+      res.status(403).json(new JsonResponse().error("Forbidden.").build());
       return;
     }
     // TODO: Cache the user role
     if (checkRoles(roles, userRole.role.name || '')) {
       next();
     } else {
-      res.status(403).json(JsonResponse.error("You do not have not enough permission."));
+      res.status(403).json(new JsonResponse().error("You do not have not enough permission.").build());
     }
   };

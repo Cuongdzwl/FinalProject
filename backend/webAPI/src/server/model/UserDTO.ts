@@ -31,13 +31,13 @@ export class UserAccountDTO {
   }
 }
 export class UserAccessTokenDTO {
-  user_id?: number;
-  access_token?: string;
-  refresh_token?: string;
+  userId?: number;
+  accessToken?: string;
+  refreshToken?: string;
 
   constructor(user_id: number, access_token: string, refresh_token: string) {
-    this.user_id = user_id;
-    this.access_token = access_token;
-    this.refresh_token = refresh_token;
+    this.userId = user_id;
+    this.accessToken = access_token;
+    this.refreshToken = refresh_token;
   }
 }

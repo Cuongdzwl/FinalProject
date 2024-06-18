@@ -15,7 +15,7 @@ export default express
   .post('/logout', authenticate, controller.logout)
   .post('/otp/generate', wip)
   .post('/otp/verify', wip)
-  .post('/google', wip)
-  .post('/google/callback', wip)
+  .get('/google', controller.googleAuth)
+  .get('/google/callback', controller.googleAuthCallback)
   .post('/password/reset/:token', wip)
   .post('/password/forgot', wip);

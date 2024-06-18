@@ -9,6 +9,7 @@ import L from '../../../common/logger';
 import Utils from './utils';
 import redisClient from '../../../common/redis';
 import { JsonWebTokenError } from 'jsonwebtoken';
+import { IEmailService } from '../communication/email/email.interface';
 
 const prisma = new PrismaClient();
 const REFRESH_TOKEN_EXPIRATION_SECONDS: number = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -79,7 +80,7 @@ export class AuthenticationService implements IAuthenticationService {
           } else {
             const token = this.signAccessToken(user);
             const refreshtoken = this.signRefreshToken(user);
-            resolve({ id: user.id, token, refreshtoken });
+            resolve(new UserAccessTokenDTO(user.id, token, refreshtoken));
           }
         }
       )(req);
@@ -114,12 +115,6 @@ export class AuthenticationService implements IAuthenticationService {
         });
     });
   }
-  oauth(_: Request, strategy: OAuth2Strategy): Promise<any> {
-    // TODO: Implement this method
-    return new Promise(() => {
-      strategy.login();
-    });
-  }
   logout(accessToken: string, refreshToken: string): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -144,6 +139,16 @@ export class AuthenticationService implements IAuthenticationService {
       });
       resolve({ message: 'Logged out.' });
     });
+  }
+
+  sendResetPasswordToken(email: string) {
+    email = email.trim();
+  }
+  resetPassword(token: string, password: string) {
+    const decoded = Utils.verifyRefreshPasswordToken(token);
+    if (decoded) {
+      password;
+    }
   }
 }
 

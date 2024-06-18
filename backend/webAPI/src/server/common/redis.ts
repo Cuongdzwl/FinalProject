@@ -13,7 +13,7 @@ redisClient.on('connect', () => {
   L.info('Connected to Redis');
 });
 
-redisClient.ping().then(async () => {
+redisClient.ping().then(() => {
   L.info('Ping Response ');
 });
 

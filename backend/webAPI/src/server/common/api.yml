@@ -43,7 +43,7 @@ paths:
           description: Logout successful
         '401':
           description: Unauthorized
-  /auth/user:
+  /auth/google:
     get:
       tags:
         - Authentication
