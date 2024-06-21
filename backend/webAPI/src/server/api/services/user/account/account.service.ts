@@ -34,6 +34,7 @@ export class AccountService implements IAccountService {
   delete(): Promise<any> {
     throw new Error('Method not implemented.');
   }
+  
 }
 
-export default new AccountService();
+ new AccountService();

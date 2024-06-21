@@ -5,7 +5,6 @@ import L from '../../../common/logger';
 import passport from 'passport';
 import { PrismaClient, User } from '@prisma/client';
 import Utils from './utils';
-import accountService from '../user/account/account.service';
 import providerService from '../user/provider/provider.service';
 import userService from '../user/user.service';
 
@@ -102,7 +101,7 @@ passport.serializeUser((user: any, done) => {
 
 passport.deserializeUser(async (id: number, done) => {
   try {
-    accountService
+    userService
       .byId(id)
       .then((user) => {
         done(null, user);

@@ -11,11 +11,12 @@ export default express
   })
   .post('/signup', controller.signup)
   .post('/token', controller.login)
-  .post('/refresh-token', controller.refreshToken)
+  .post('/token/refresh', controller.refreshToken)
   .post('/logout', authenticate, controller.logout)
-  .post('/otp/generate', wip)
-  .post('/otp/verify', wip)
+  .post('/otp/generate',authenticate, controller.getOTP)
+  .post('/otp/verify',authenticate, controller.verifyOTP)
+  .get('/otp/secret',authenticate, controller.generateOTPQrCode)
   .get('/google', controller.googleAuth)
   .get('/google/callback', controller.googleAuthCallback)
-  .post('/password/reset/:token', wip)
-  .post('/password/forgot', wip);
+  .post('/password/reset/:token', controller.resetPassword)
+  .post('/password/forgot', controller.forgotPassword);

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import AuthenticationService from '../services/user/profile/profile.service';
+import AuthenticationService from '../services/user/user.service';
 import l from '../../common/logger';
 import Utils from '../services/auth/utils';
 import { TokenExpiredError } from 'jsonwebtoken';
@@ -26,18 +26,22 @@ export const authenticate = async (
       res.status(401).json(new JsonResponse().error("Invalid Token.").redirect("/signin").build());
       return;
     }
-    AuthenticationService.getUser(decoded.id).then((r) => {
+    l.info("User retrieved successfully." + decoded.id);
+    AuthenticationService.byId(decoded.id).then((r) => {
       if (r) {
         res.locals.user = r;
         l.info(`User authenticated. (id: ${r.id})`);
         next();
       } else {
-        res.status(401).json(new JsonResponse().error("User not found.").redirect("/signup").build());
+        res.status(401).json(new JsonResponse().error("Invalid Token.").redirect("/signup").build());
       }
+    }).catch((err) => {
+      l.error(err);
+      res.status(401).json(new JsonResponse().error(err).redirect("/signup").build());
     });
   } catch (err) {
     if (err instanceof TokenExpiredError) {
-      res.status(401).json(new JsonResponse().error("User not found.").metadata({refreshToken: true}).build());
+      res.status(401).json(new JsonResponse().error("Token expired.").metadata({refreshToken: true}).build());
     } else {
       res.status(401).json(new JsonResponse().error("Invalid Token.").redirect("/signin").build());
     }

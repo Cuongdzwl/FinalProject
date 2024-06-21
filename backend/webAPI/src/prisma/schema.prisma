@@ -21,12 +21,14 @@ model User {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   lastOnline DateTime?
-  isOnline   Boolean   @default(false)
   verified   Boolean   @default(false)
 
   authentications    UserProvider[]
   roles              UserRole[]
   userAuthentication UserAuthentication?
+  UserOrganization   UserOrganization[]
+  UserPlan           UserPlan[]
+  UserInformation    UserInformation?
 }
 
 model UserInformation {
@@ -43,14 +45,16 @@ model UserInformation {
   address       String?   @db.VarChar(200)
   city          String?   @db.VarChar(50)
   country       String?   @db.VarChar(50)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserAuthentication {
   id                 Int     @id @default(autoincrement())
   userId             Int     @unique
-  OTP                String?
+  LastVerifiedOTP    String?
   OTPKey             String?
-  resetPasswordToken String?
+  resetPasswordToken String? @unique
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -89,4 +93,53 @@ model UserRole {
   role Role @relation(fields: [roleId], references: [id])
 
   @@id([userId, roleId])
+}
+
+model UserOrganization {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  organizationId Int
+  role           String
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+}
+
+model Organization {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users UserOrganization[]
+}
+
+model UserPlan {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  planId    Int
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id], onDelete: NoAction)
+
+  @@unique([userId, planId])
+}
+
+model Plan {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  price       Float
+  duration    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users UserPlan[]
 }

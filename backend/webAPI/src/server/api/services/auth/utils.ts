@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 const SALT_ROUND = 10;
 
 export default class Utils {
@@ -15,12 +15,25 @@ export default class Utils {
     });
   }
 
+  
+  static signResetPasswordToken(userId: number): string {
+    return jwt.sign({ id: userId, action: "Reset Password" }, process.env.JWT_RESET_SECRET as string, {
+      expiresIn: "5m",
+    });
+  }
+
   static verifyAccessToken(token: string): any {
     return jwt.verify(token, process.env.JWT_SECRET as string);
   }
-
-  static verifyRefreshPasswordToken(token: string): any {
-    return jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) ;    
+  static verifyResetPasswordToken(token: string): any  {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) as JwtPayload;
+    if (!decoded) {
+      return null;
+    }
+    if (decoded.action !== "Reset Password") {
+      return null;
+    }
+    return decoded;
   }
 
   static verifyRefreshToken(token: string): any {

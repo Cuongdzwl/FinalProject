@@ -3,15 +3,17 @@ import { User } from '@prisma/client';
 import { Request } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { UserAccessTokenDTO, UserAccountDTO } from '../../../model/UserDTO';
-import { OAuth2Strategy } from './oauth2strategy.interface';
 import authenticator from './passport.strategy';
 import L from '../../../common/logger';
 import Utils from './utils';
 import redisClient from '../../../common/redis';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { IEmailService } from '../communication/email/email.interface';
+import userService from '../user/user.service';
+import { reject, resolve } from 'bluebird';
 
 const prisma = new PrismaClient();
+
 const REFRESH_TOKEN_EXPIRATION_SECONDS: number = 7 * 24 * 60 * 60 * 1000; // 7 days
 const TOKEN_EXPIRATION_SECONDS: number = 15 * 60; // 15 minutes
 
@@ -141,15 +143,9 @@ export class AuthenticationService implements IAuthenticationService {
     });
   }
 
-  sendResetPasswordToken(email: string) {
-    email = email.trim();
-  }
-  resetPassword(token: string, password: string) {
-    const decoded = Utils.verifyRefreshPasswordToken(token);
-    if (decoded) {
-      password;
-    }
-  }
+
+
+
 }
 
 export default new AuthenticationService();

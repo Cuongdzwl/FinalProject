@@ -8,6 +8,8 @@ import l from './logger';
 import cors from 'cors';
 import redisClient from './redis';
 import errorHandler from '../api/middlewares/error.handler';
+import csrf from 'csurf';
+import helmet from 'helmet';
 
 const app = express();
 
@@ -16,9 +18,6 @@ export default class ExpressServer {
   constructor() {
     // Normalize the root path of the project
     const root = path.normalize(__dirname + '/../..');
-
-    // Enable Cross-Origin Resource Sharing
-    app.use(cors({ origin: '*' }));
 
     app.use((_, __, next) => {
       redisClient;
@@ -42,6 +41,21 @@ export default class ExpressServer {
     // Use cookie-parser middleware to parse cookies attached to the client request object
     app.use(cookieParser(process.env.SESSION_SECRET));
 
+    // Enable Cross-Origin Resource Sharing
+    app.use(cors({ origin: '*' }));
+
+    const csrfProtection = csrf({ cookie: true });
+
+    app.use(csrfProtection);
+    app.get('/api/v1/csrf-token', (req, res) => {
+      res.cookie('XSRF-TOKEN', req.csrfToken()).json({ csrf: req.csrfToken() });
+    });
+    app.use((req, res, next) => {
+      res.cookie('XSRF-TOKEN', req.csrfToken());
+      next();
+    });
+    app.use(helmet());
+
     // Serve static files from the 'public' directory
     app.use(express.static(`${root}/public`));
 
@@ -56,6 +70,7 @@ export default class ExpressServer {
     // Serve the OpenAPI specification file at the path specified by the OPENAPI_SPEC environment variable or default to '/spec'
     var spec = process.env.OPENAPI_SPEC || '/spec';
     l.info(`Using OpenAPI spec at: ${spec} (Path: ${apiSpec})`);
+
     app.use(spec, express.static(apiSpec));
 
     // Use OpenAPI Validator middleware to validate incoming requests and outgoing responses against the OpenAPI specification
@@ -63,6 +78,7 @@ export default class ExpressServer {
 
   router(routes: (app: Application) => void): ExpressServer {
     routes(app);
+
     app.use(errorHandler);
     return this;
   }

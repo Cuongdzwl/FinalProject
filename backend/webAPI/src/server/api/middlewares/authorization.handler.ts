@@ -21,6 +21,7 @@ export const authorize =
     var userRole = await ProfileService.getUserRoles(
       res.locals.user.id as number
     );
+    l.info(userRole)
     if (!userRole) {
       res.status(403).json(new JsonResponse().error("Forbidden.").build());
       return;

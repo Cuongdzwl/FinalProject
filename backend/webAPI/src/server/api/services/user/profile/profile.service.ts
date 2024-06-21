@@ -9,14 +9,16 @@ const prisma = new PrismaClient();
 export class ProfileService implements IProfileService {
   getUser(id: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      prisma.user
+      prisma.userInformation
         .findUnique({
           where: { id: id },
           select: {
             id: true,
-            email: true,
-            createdAt: true,
-            updatedAt: true,
+            firstName: true,
+            lastName: true,
+            dob: true,
+            bio: true,
+
           },
         })
         .then((user) => {
@@ -36,13 +38,13 @@ export class ProfileService implements IProfileService {
   getUserRoles(id: number): Promise<any> {
     return new Promise((resolve, reject) => {
       prisma.userRole
-        .findFirst({
+        .findMany({
           select: { role: { select: { id: true, name: true } } },
           where: { userId: id },
         })
         .then((r) => {
           if (r) {
-            resolve({ ...r });
+            resolve(r);
           } else {
             reject({ message: 'User not found.' });
           }
@@ -80,5 +82,7 @@ export class ProfileService implements IProfileService {
   }
 
   delete() {}
+
+
 }
 export default new ProfileService();
