@@ -2,10 +2,11 @@ import L from '../../../../common/logger';
 import { PrismaClient } from '@prisma/client';
 import userService from '../../user/user.service';
 import Utils from '../utils';
+import IPasswordService from './password.interface';
 
 const prisma = new PrismaClient();
 
-export class PasswordService {
+export class PasswordService implements IPasswordService {
   createOrUpdateResetPasswordToken(
     userId: number,
     token: string
@@ -30,7 +31,7 @@ export class PasswordService {
       });
     return Promise.resolve();
   }
-  sendResetPasswordToken(email: string): Promise<any> {
+  generateResetPasswordToken(email: string): Promise<any> {
     return new Promise((resolve, reject) => {
       userService
         .findBy('email', email)

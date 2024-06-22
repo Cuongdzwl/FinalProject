@@ -153,7 +153,7 @@ export class AuthController {
 
   forgotPassword(req: Request, res: Response): void {
     passwordService
-      .sendResetPasswordToken(req.body.email)
+      .generateResetPasswordToken(req.body.email)
       .then((r) => {
         if (r) {
           res

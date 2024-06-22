@@ -5,6 +5,6 @@ import errorHandler from '../../middlewares/error.handler';
 import { authorize } from '../../middlewares/authorization.handler';
 export default express
   .Router()
-  .get('/', authenticate,authorize(["admin"]),controller.getUser)
-  .patch('/', authenticate)
+  .get('/', authenticate,controller.getUser)
+  .put('/', authenticate,controller.update)
   .delete('/', authenticate)

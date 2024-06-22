@@ -4,16 +4,18 @@ import { UserInformationDTO } from 'server/model/UserDTO';
 import L from '../../../common/logger';
 import Utils from '../auth/utils';
 import { reject, resolve } from 'bluebird';
+import cacheService from '../cache/cache.service';
+import redisClient from '../../../common/redis';
 const prisma = new PrismaClient();
 
 export class UserService implements IUserService {
   all(): Promise<any> {
-    L.info('Fetching all users');
+    L.info('Fetching all users from database');
     return prisma.user.findMany();
   }
   async update(id: number, data: any): Promise<any> {
     var data: any = { ...data };
-    L.info('Updating user with id: ' + id );
+    L.info('Updating user with id: ' + id);
     L.info(data);
     if (data.password) {
       const user = await this.byId(id)
@@ -25,8 +27,8 @@ export class UserService implements IUserService {
           L.error(error);
           return null;
         });
-        data.password = await Utils.hashPassword(data.password, user.salt);
-        L.info(data.password)
+      data.password = await Utils.hashPassword(data.password, user.salt);
+      L.info(data.password);
     }
 
     return prisma.user.update({
@@ -34,7 +36,7 @@ export class UserService implements IUserService {
         id: id,
       },
       data: data,
-    })
+    });
   }
   byId(id: number): Promise<any> {
     L.info('Fetching user with id: ' + id);
@@ -61,24 +63,24 @@ export class UserService implements IUserService {
           user.salt = await Utils.generateSalt();
           user.password = await Utils.hashPassword(user.password, user.salt);
         }
-        prisma.user
-          .create({
-            data: user,
-          })
-          .then((r) => {
-            resolve(r);
-            return;
-          })
-          .catch((err) => {
-            L.error(err);
-            reject(err);
-            return;
-          });
       } catch (err) {
         L.error(err);
         reject(err);
         return;
       }
+      prisma.user
+        .create({
+          data: user,
+        })
+        .then((r) => {
+          resolve(r);
+          return;
+        })
+        .catch((err) => {
+          L.error(err);
+          reject(err);
+          return;
+        });
     });
   }
   delete(id: number): Promise<any> {
@@ -101,6 +103,11 @@ export class UserService implements IUserService {
         });
     });
   }
+
+  generateCacheKey(id?: number, custom?:string): string {
+    if (!id) return 'users';
+    return `user_${id || ''}${custom || ''}`;
+  } 
 }
 
 export default new UserService();

@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import AuthenticationService from '../services/user/user.service';
+import userService from '../services/user/user.service';
 import l from '../../common/logger';
 import Utils from '../services/auth/utils';
 import { TokenExpiredError } from 'jsonwebtoken';
-import { redisClient } from '../../common/redis';
 import { JsonResponse } from '../common/utils';
+import cacheService from '../services/cache/cache.service';
+import { resolve } from 'bluebird';
 
 export const authenticate = async (
   req: Request,
@@ -21,15 +22,26 @@ export const authenticate = async (
   }
   try {
     const decoded = await Utils.verifyAccessToken(accessToken);
-    const status = await redisClient.get(accessToken)
+    const status = await cacheService.get(accessToken)
+    // TODO: handle Update user online status
+
     if (status === "invalidated") {
       res.status(401).json(new JsonResponse().error("Invalid Token.").redirect("/signin").build());
       return;
     }
     l.info("User retrieved successfully." + decoded.id);
-    AuthenticationService.byId(decoded.id).then((r) => {
+    const cache = await cacheService.getData(userService.generateCacheKey(decoded.id))
+    if(cache){
+      res.locals.user = cache;
+      l.info(cache)
+      l.info(`User authenticated. Cache (id: ${decoded.id})`);
+      next();
+      return;
+    }
+    userService.byId(decoded.id).then((r) => {
       if (r) {
         res.locals.user = r;
+        cacheService.cacheData(userService.generateCacheKey(r.id), r)
         l.info(`User authenticated. (id: ${r.id})`);
         next();
       } else {
