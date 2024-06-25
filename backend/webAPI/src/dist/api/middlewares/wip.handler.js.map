@@ -1,1 +1,0 @@
-{"version":3,"file":"wip.handler.js","sourceRoot":"","sources":["../../../server/api/middlewares/wip.handler.ts"],"names":[],"mappings":";;;AAEA,SAAgB,GAAG,CACjB,IAAa,EACb,GAAa,EACb,KAAmB;IAEnB,GAAG,CAAC,MAAM,CAAC,GAAG,CAAC,CAAC,IAAI,CAAC,EAAC,MAAM,EAAC;YAC3B,MAAM,EAAE,OAAO;YACf,OAAO,EAAE,iEAAiE;SAC3E,EAAC,CAAC,CAAC;AACN,CAAC;AATD,kBASC"}
