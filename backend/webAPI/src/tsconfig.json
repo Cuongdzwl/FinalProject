@@ -18,14 +18,16 @@
     "noUnusedLocals": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": false,
-    "strictPropertyInitialization":false,
+    "strictPropertyInitialization": false,
     "alwaysStrict": true,
     "outDir": "dist",
     "typeRoots": ["node_modules/@types"],
     "resolveJsonModule": true,
     "baseUrl": "."
-
   },
-  "include": ["server/**/*.ts", "server/api/services/communication/email/email.interface"],
+  "include": [
+    "server/**/*.ts",
+    "server/api/services/communication/email/email.interface"
+  ],
   "exclude": ["node_modules"]
 }

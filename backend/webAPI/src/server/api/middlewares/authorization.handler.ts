@@ -14,22 +14,36 @@ function checkRoles(roles: string[], roleName: string): boolean {
   }
   return false;
 }
+
 export const authorize =
   (roles: string[]) =>
   async (_: Request, res: Response, next: NextFunction) => {
     // Fetch database
     var userRole = await ProfileService.getUserRoles(
       res.locals.user.id as number
-    );
-    l.info(userRole)
+    )
+      .then((r) => {
+        return r;
+      })
+      .catch((err) => {
+        l.error(err);
+        return null;
+      });
+    l.info(userRole);
     if (!userRole) {
-      res.status(403).json(new JsonResponse().error("Forbidden.").build());
+      res.status(403).json(new JsonResponse().error('Forbidden.').build());
       return;
     }
     // TODO: Cache the user role
     if (checkRoles(roles, userRole.role.name || '')) {
       next();
     } else {
-      res.status(403).json(new JsonResponse().error("You do not have not enough permission.").build());
+      res
+        .status(403)
+        .json(
+          new JsonResponse()
+            .error('You do not have not enough permission.')
+            .build()
+        );
     }
   };

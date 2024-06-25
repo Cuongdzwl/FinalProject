@@ -7,6 +7,7 @@ import { PrismaClient, User } from '@prisma/client';
 import Utils from './utils';
 import providerService from '../user/provider/provider.service';
 import userService from '../user/user.service';
+import googleService from './google.service';
 
 const prisma = new PrismaClient();
 
@@ -73,18 +74,21 @@ const google = new Google(
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
+      // TODO: Add Accesstoken verify to add different email
+      // TODO: Add verify 
       var user = await userService.findBy('email', profile.email);
       if (user === null) {
         done({ message: 'User not found!' }, null);
         return;
       }
-      var providerId = await providerService.create(
+      await providerService.create(
         user.id,
         profile.provider,
         profile.id
       );
       // }
       L.info('User Logins: ' + JSON.stringify(profile));
+      googleService.updateUserProfile(user.id, profile);
       done(null, user);
       accessToken;
       refreshToken;

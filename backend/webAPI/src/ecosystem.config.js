@@ -13,17 +13,7 @@ module.exports = {
         exec_mode: 'cluster',
         autorestart: true,
         env: {
-          NODE_ENV: 'production',
-          OPENAPI_SPEC: process.env.OPENAPI_SPEC,
-          PORT: process.env.PORT || 80,
-          DATABASE_URL: process.env.DATABASE_URL,
-          AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING,
-          AZURE_STORAGE_CONTAINER_NAME: process.env.AZURE_STORAGE_CONTAINER_NAME,
-          JWT_SECRET: process.env.JWT_SECRET,
-          SESSION_SECRET: process.env.SESSION_SECRET,
-          NOVU_API_KEY: process.env.NOVU_API_KEY,
-          NOVU_IDENTIFIER: process.env.NOVU_IDENTIFIER,
-          SITE_DOMAIN: process.env.SITE_DOMAIN,
+
         }
       },
     ],

@@ -1,7 +1,7 @@
 import redis, { redisClient } from '../../../common/redis';
 import L from '../../../common/logger';
 import { PrismaClient } from '@prisma/client';
-const CACHE_TTL = 60 * 60 * 24; // 24 hours
+const CACHE_TTL = 60; // 60s
 
 export class CacheService {
   private beta: number;
@@ -67,11 +67,10 @@ export class CacheService {
           L.info('Lock acquired, fetching data from source');
           // Cache miss, acquire lock and fetch data from the source
           const sourceData: any = await source();
-          if (!sourceData) return null;
           // Cache the fetched data
-          data = JSON.stringify(sourceData);
           await this.cacheData(key, sourceData);
           // Release the lock
+          data = JSON.stringify(sourceData);
           await redis.del(lockKey);
           return sourceData;
         } else {
@@ -81,7 +80,7 @@ export class CacheService {
         }
       }
       if (data === null) {
-        L.info('Source invalid, returning null');
+        L.info('Data not found');
         return null;
       }
       return await JSON.parse(data);
@@ -90,7 +89,6 @@ export class CacheService {
       return null;
     }
   }
-
 
   /**
    * Caches the provided data in Redis with the given key and optional prefix.
@@ -151,14 +149,37 @@ export class CacheService {
     }
   }
 
+  /**
+   * Invalidates the cache for the given key and optional prefix.
+   *
+   * @param key - The unique identifier for the cache data.
+   * @param prefix - An optional prefix to prepend to the key. If not provided, the default prefix 'cache:' will be used.
+   *
+   * @throws Will throw an error if there is an issue with invalidating the cache.
+   */
   async invalidateCache(key: string, prefix?: string) {
     try {
-      await redis.del(this.generateCacheKey(key, prefix));
+      key = this.generateCacheKey(key, prefix)
+      L.info(`Invalidating cache for key: ${key}`);
+      await redis.del(key);
     } catch (err) {
       L.error('Error invalidating cache:', err);
     }
   }
 
+  /**
+   * Sets a value in the Redis cache with the specified key and optional options.
+   *
+   * @param key - The key to store the value in the cache.
+   * @param value - The value to be stored in the cache.
+   * @param option - An optional object containing additional Redis set options.
+   *
+   * @returns A Promise that resolves to a string indicating the status of the SET operation.
+   *          If the operation is successful, the Promise resolves to 'OK'.
+   *          If an error occurs during the SET operation, the Promise rejects with an error message.
+   *
+   * @throws Will throw an error if there is an issue with setting the cache.
+   */
   async set(key: string, value: string, option?: any): Promise<string | null> {
     try {
       return await redis.set(key, value, option);
@@ -168,6 +189,15 @@ export class CacheService {
     }
   }
 
+  /**
+   * Retrieves a value from the Redis cache using the provided key.
+   *
+   * @param key - The key to retrieve the value from the cache.
+   * @returns A Promise that resolves to the value if found, or null if not found.
+   *          If an error occurs during the GET operation, the Promise rejects with an error message.
+   *
+   * @throws Will throw an error if there is an issue with getting the cache.
+   */
   async get(key: string): Promise<string | null> {
     try {
       return await redis.get(key);
@@ -176,12 +206,33 @@ export class CacheService {
       return null;
     }
   }
-  // Function to check if cache should be refreshed
-  private shouldRefreshCache(expiry: number, timeToCompute: number): boolean {
-    const currentTime = Date.now();
-    const randomLog = Math.log(Math.random());
-    return currentTime - timeToCompute * this.beta * randomLog > expiry;
+
+  /**
+   * Deletes a value from the Redis cache using the provided key.
+   *
+   * @param key - The key to delete from the cache.
+   *
+   * @returns A Promise that resolves to the number of keys deleted.
+   *          If the operation is successful, the Promise resolves to 1.
+   *          If the key does not exist, the Promise resolves to 0.
+   *          If an error occurs during the DEL operation, the Promise rejects with an error message.
+   *
+   * @throws Will throw an error if there is an issue with deleting the cache.
+   */
+  async del(key: string): Promise<number> {
+    try {
+      return await redis.del(key);
+    } catch (err) {
+      L.error('Error deleting cache:', err);
+      throw err; // rethrow the error to propagate it upwards
+    }
   }
+  // // Function to check if cache should be refreshed
+  // private shouldRefreshCache(expiry: number, timeToCompute: number): boolean {
+  //   const currentTime = Date.now();
+  //   const randomLog = Math.log(Math.random());
+  //   return currentTime - timeToCompute * this.beta * randomLog > expiry;
+  // }
 
   // Fetch data from cache or database
   // public async getData(key: string, query: () => Promise<any>, ttl = 3600): Promise<any> {

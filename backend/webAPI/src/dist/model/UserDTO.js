@@ -1,25 +1,47 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserAccessTokenDTO = exports.UserAccountDTO = exports.UserInfomationDTO = exports.UserDTO = void 0;
+exports.UserAccessTokenDTO = exports.UserAccountInfomationDTO = exports.UserAccountDTO = exports.UserInformationDTO = exports.UserDTO = void 0;
 class UserDTO {
 }
 exports.UserDTO = UserDTO;
-class UserInfomationDTO {
+class UserInformationDTO {
+    constructor(data) {
+        this.userId = data.userId;
+        this.firstName = data.firstName;
+        this.lastName = data.lastName;
+        this.dob = data.dob;
+        this.bio = data.bio;
+        this.avatar = data.avatar;
+        this.isMale = data.isMale;
+        this.phone = data.phone;
+        this.phoneverified = data.phoneverified;
+        this.address = data.address;
+        this.city = data.city;
+        this.country = data.country;
+    }
 }
-exports.UserInfomationDTO = UserInfomationDTO;
+exports.UserInformationDTO = UserInformationDTO;
 class UserAccountDTO {
-    constructor(username, email, password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
+    constructor(data) {
+        this.name = data.username;
+        this.email = data.email;
+        this.password = data.password;
     }
 }
 exports.UserAccountDTO = UserAccountDTO;
+class UserAccountInfomationDTO {
+    constructor(data) {
+        this.name = data.username;
+        this.email = data.email;
+        this.password = data.password;
+    }
+}
+exports.UserAccountInfomationDTO = UserAccountInfomationDTO;
 class UserAccessTokenDTO {
     constructor(user_id, access_token, refresh_token) {
-        this.user_id = user_id;
-        this.access_token = access_token;
-        this.refresh_token = refresh_token;
+        this.userId = user_id;
+        this.accessToken = access_token;
+        this.refreshToken = refresh_token;
     }
 }
 exports.UserAccessTokenDTO = UserAccessTokenDTO;

@@ -18,16 +18,41 @@ export class UserInformationDTO {
   address?: string | null;
   city?: string | null;
   country?: string | null;
+  constructor(data: any) {
+    this.userId = data.userId;
+    this.firstName = data.firstName;
+    this.lastName = data.lastName;
+    this.dob = data.dob;
+    this.bio = data.bio;
+    this.avatar = data.avatar;
+    this.isMale = data.isMale;
+    this.phone = data.phone;
+    this.phoneverified = data.phoneverified;
+    this.address = data.address;
+    this.city = data.city;
+    this.country = data.country;
+  }
 }
 export class UserAccountDTO {
   id?: number;
   name?: string;
   email?: string;
   password?: string;
-  constructor(username: string, email: string, password: string) {
-    this.name = username;
-    this.email = email;
-    this.password = password;
+  constructor(data: any) {
+    this.name = data.username;
+    this.email = data.email;
+    this.password = data.password;
+  }
+}
+export class UserAccountInfomationDTO {
+  id?: number;
+  name?: string;
+  email?: string;
+  password?: string;
+  constructor(data: any) {
+    this.name = data.username;
+    this.email = data.email;
+    this.password = data.password;
   }
 }
 export class UserAccessTokenDTO {

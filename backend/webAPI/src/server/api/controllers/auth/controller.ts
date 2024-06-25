@@ -107,6 +107,7 @@ export class AuthController {
   }
 
   googleAuthCallback(req: Request, res: Response, next: NextFunction): void {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
     googleService
       .callback(req, res, next)
       .then((r) => {

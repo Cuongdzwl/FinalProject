@@ -2,8 +2,8 @@
 import { Request } from "express";
 import { UserAccountDTO } from "../../../model/UserDTO";
 export interface IAuthenticationService {
-    login(req: Request): Promise<any>;
+    authenticate(req: Request): Promise<any>;
+    refreshTokens(refreshToken: string): Promise<any>;
     signup(user: UserAccountDTO): Promise<any>;
-    logout(token: String): Promise<any>;
-    user(token: String): Promise<any>;
+    logout(accessToken: string, refreshToken: string): Promise<any>;
 }

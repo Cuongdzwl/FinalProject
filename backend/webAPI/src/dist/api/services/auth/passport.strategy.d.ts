@@ -1,2 +1,2 @@
-import * as passport from "passport";
+import passport from 'passport';
 export default passport;

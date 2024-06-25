@@ -1,3 +1,4 @@
+import { Pagination } from './../../common/utils';
 import { PrismaClient, User } from '@prisma/client';
 import { IUserService } from './user.interface';
 import { UserInformationDTO } from 'server/model/UserDTO';
@@ -6,12 +7,62 @@ import Utils from '../auth/utils';
 import { reject, resolve } from 'bluebird';
 import cacheService from '../cache/cache.service';
 import redisClient from '../../../common/redis';
+import { GeneralService } from '../general.service';
 const prisma = new PrismaClient();
 
-export class UserService implements IUserService {
+export class UserService extends GeneralService implements IUserService {
+  /**
+   * Fetches all users from the database based on the pagination and order options.
+   * If there is an error during the database operation, it will fall back to fetching without pagination options.
+   *
+   * @returns A Promise that resolves to an array of User objects.
+   *
+   * @throws Will throw an error if there is a problem with the database connection.
+   */
   all(): Promise<any> {
-    L.info('Fetching all users from database');
-    return prisma.user.findMany();
+    try {
+      return new Promise<any>((resolve, _) => {
+        L.info('Fetching all users from database');
+        L.info(this.paginationOptions);
+        const data = prisma.user
+          .findMany({
+            select: {
+              id: true,
+              email: true,
+            },
+            ...this.orderOptions,
+          })
+          .catch((_) => {
+            return prisma.user.findMany({
+              ...this.paginationOptions,
+            });
+          });
+        return resolve(data);
+      });
+    } finally {
+      this.clear();
+    }
+  }
+  /**
+   * Counts the number of users based on the provided filter and value.
+   * If the result is cached, it will be fetched from the cache instead of the database.
+   *
+   * @param filter - The field to filter on.
+   * @param value - The value to match in the filter field.
+   * @returns A Promise that resolves to the count of users.
+   *
+   * @throws Will throw an error if there is a problem with the database connection or cache retrieval.
+   */
+  async count(filter?: string, value?: string): Promise<any> {
+    try {
+      var where: any = undefined;
+      if (filter && value) {
+        where = { [filter]: value };
+      }
+      return prisma.user.count({ where });
+    } finally {
+      this.clear();
+    }
   }
   async update(id: number, data: any): Promise<any> {
     var data: any = { ...data };
@@ -19,6 +70,7 @@ export class UserService implements IUserService {
     L.info(data);
     if (data.password) {
       const user = await this.byId(id)
+        //TODO: Invalidate Cache
         .then((user) => {
           if (!user) return null;
           return user;
@@ -28,7 +80,6 @@ export class UserService implements IUserService {
           return null;
         });
       data.password = await Utils.hashPassword(data.password, user.salt);
-      L.info(data.password);
     }
 
     return prisma.user.update({
@@ -73,6 +124,8 @@ export class UserService implements IUserService {
           data: user,
         })
         .then((r) => {
+          //TODO: Invalidate Cache
+          prisma.userRole.create({ data: { userId: r.id, roleId: 7 } });
           resolve(r);
           return;
         })
@@ -86,6 +139,7 @@ export class UserService implements IUserService {
   delete(id: number): Promise<any> {
     L.info('Deleting user with id:' + id);
     return new Promise((resolve, reject) => {
+      //TODO: Invalidate Cache
       prisma.user
         .delete({
           where: {
@@ -104,10 +158,10 @@ export class UserService implements IUserService {
     });
   }
 
-  generateCacheKey(id?: number, custom?:string): string {
-    if (!id) return 'users';
-    return `user_${id || ''}${custom || ''}`;
-  } 
+  generateCacheKey(id?: number, custom?: string): string {
+    if (!id && !custom) return 'users';
+    return `users:${id || ''}${custom || ''}`;
+  }
 }
 
 export default new UserService();

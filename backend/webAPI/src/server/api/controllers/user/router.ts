@@ -6,4 +6,8 @@ import { authorize } from '../../middlewares/authorization.handler';
 export default express
   .Router()
   .get('/', controller.getUsers)
-  .get('/clear', controller.cls);
+  .post('/', controller.createUser)
+  .get('/:id', controller.getUser)
+  .put('/:id', controller.updateUser)
+  .delete('/:id', controller.deleteUser)       
+  .get('/clear',authenticate,authorize(["Super Admin"]), controller.cls)

@@ -54,6 +54,10 @@ export default class ExpressServer {
       res.cookie('XSRF-TOKEN', req.csrfToken());
       next();
     });
+    app.use((_, res, next) => {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      next();
+    });
     app.use(helmet());
 
     // Serve static files from the 'public' directory
